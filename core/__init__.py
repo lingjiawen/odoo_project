@@ -3,5 +3,5 @@
 
 def init_patch():
     print('''
-        use odoo default by misterling.
+    use odoo12 customize installation designed by misterling.
     ''')
