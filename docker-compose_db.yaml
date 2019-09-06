@@ -1,0 +1,19 @@
+version: '2'
+services:
+   postgres_10_db:
+        image: postgres:10
+        container_name: postgres_10_db
+        environment:
+            - POSTGRES_USER=odoo12
+            - POSTGRES_PASSWORD=odoo12
+            - POSTGRES_DB=postgres
+            - PGDATA=/var/lib/postgresql/data/pgdata
+        volumes:
+            - postgres_10_db_volume:/var/lib/postgresql/data/pgdata
+        ports:
+            - "5432:5432"
+        network_mode: bridge
+
+volumes:
+        postgres_10_db_volume:
+                external: true
