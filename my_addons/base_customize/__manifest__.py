@@ -2,6 +2,7 @@
 {
     'name': 'base customize',
     'version': '1.0',
+    'author': 'misterling',
     'summary': 'base customize',
     'sequence': 1,
     'description': """
