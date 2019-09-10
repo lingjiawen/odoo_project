@@ -1,2 +1,3 @@
 odoo12/
 .idea
+*.pyc
