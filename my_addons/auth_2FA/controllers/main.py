@@ -35,28 +35,30 @@ class WebHome(odoo.addons.web.controllers.main.Home):
         if request.httprequest.method == 'POST':
             old_uid = request.uid
             try:
-                # res_user = request.env['res.users'].search([('login', '=', request.params['login'])], limit=1)
-                # if len(res_user) == 0:
-                #     raise odoo.exceptions.AccessDenied('账号不存在')
-                # request.env.cr.execute(
-                #     "SELECT COALESCE(password, '') FROM res_users WHERE id=%s",
-                #     [res_user.id]
-                # )
-                # 验证密码正确性
                 request.env.cr.execute(
-                    "SELECT COALESCE(password, '') FROM res_users WHERE login=%s",
+                    "SELECT COALESCE(company_id, NULL), COALESCE(password, '') FROM res_users WHERE login=%s",
                     [request.params['login']]
                 )
-                [hashed] = request.env.cr.fetchone()
-                valid, replacement = default_crypt_context.verify_and_update(request.params['password'], hashed)
-                if replacement is not None:
-                    self._set_encrypted_password(self.env.user.id, replacement)
-                if valid:
-                    response = request.render('auth_2FA.2fa_auth', values)
-                    response.headers['X-Frame-Options'] = 'DENY'
-                    return response
-                else:
-                    raise odoo.exceptions.AccessDenied()
+                res = request.env.cr.fetchone()
+                if not res:
+                    raise odoo.exceptions.AccessDenied(_('Wrong login account'))
+                [company_id, hashed] = res
+                if company_id and request.env['res.company'].browse(company_id).is_open_2fa:
+                    # 验证密码正确性
+                    valid, replacement = default_crypt_context.verify_and_update(request.params['password'], hashed)
+                    if replacement is not None:
+                        self._set_encrypted_password(self.env.user.id, replacement)
+                    if valid:
+                        response = request.render('auth_2FA.2fa_auth', values)
+                        response.headers['X-Frame-Options'] = 'DENY'
+                        return response
+                    else:
+                        raise odoo.exceptions.AccessDenied()
+                # 没有打开双因子验证
+                uid = request.session.authenticate(request.session.db, request.params['login'],
+                                                   request.params['password'])
+                request.params['login_success'] = True
+                return http.redirect_with_hash(self._login_redirect(uid, redirect=redirect))
             except odoo.exceptions.AccessDenied as e:
                 request.uid = old_uid
                 if e.args == odoo.exceptions.AccessDenied().args:
