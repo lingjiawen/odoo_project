@@ -7,7 +7,7 @@
         双因子验证
     """,
     'author': 'misterling',
-    'license': 'MIT',
+    'license': 'LGPL-3',
     'depends': ['auth_signup'],
     'data': [
         'views/res_users.xml',
