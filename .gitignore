@@ -1,3 +1,4 @@
 odoo12/
 .idea
 *.pyc
+.DS_Store
